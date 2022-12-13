@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -16,23 +16,31 @@ import {
 } from "@mui/material";
 import Axios from "../../axios/Axios";
 import { Link } from "react-router-dom";
-import { ISeashells } from "../../interfaces/interfaces";
+// import { ISeashells } from "../../interfaces/interfaces";
 import SeashellRow from "../../components/SeashellRow";
 import styles from "./Seashell.module.css";
+import { getSeashells } from "../../redux/seashell/seashellThunk";
+// import { useDispatch } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 export default function Seashell() {
-  const [seashells, setSeaShells] = useState<ISeashells[]>([]);
+  // const [seashells, setSeaShells] = useState<ISeashells[]>([]);
 
+  const dispatch = useAppDispatch();
+  const seashellsArr = useAppSelector((state) => state.seashell);
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const getData = async () => {
-    const response = await Axios.get("/seashells");
-    console.log(response.data[0]);
-    setSeaShells(response.data);
-  };
+  // const getData = async () => {
+  //   const response = await Axios.get("/seashells");
+  //   console.log(response.data[0]);
+  // setSeaShells(response.data);
+  // };
   useEffect(() => {
-    getData();
-  }, []);
+    dispatch(getSeashells());
+
+    // getData();
+  }, [dispatch]);
+  console.log(seashellsArr);
 
   const UpdateUser = (id?: string) => {
     navigate("/update/" + id);
@@ -42,7 +50,7 @@ export default function Seashell() {
     await Axios.delete(`/seashells/${id}`)
       .then((res) => {
         console.log(res.data);
-        getData();
+        dispatch(getSeashells());
       })
       .catch((err) => console.log(err));
   };
@@ -95,8 +103,8 @@ export default function Seashell() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {seashells
-                  ? seashells.map((user) => (
+                {seashellsArr
+                  ? seashellsArr.map((user) => (
                       <SeashellRow
                         key={user.id}
                         id={user.id}

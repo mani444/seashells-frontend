@@ -11,17 +11,30 @@ import { useParams } from "react-router-dom";
 import Axios from "../../axios/Axios";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateSeashell.module.css";
+import { useAppDispatch } from "../../redux/store";
+import {
+  createSeashells,
+  editSeashells,
+} from "../../redux/seashell/seashellThunk";
 export default function CreateSeashell() {
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
   const [description, setDescription] = useState("");
   const [isEditable, setIsEditable] = useState(true);
+  const dispatch = useAppDispatch();
 
   let { id } = useParams();
   //   console.log(id);
 
+  // const seashellsArr = useAppSelector((state) => state.seashell);
   useEffect(() => {
     if (id && isEditable) {
+      // const seashell = seashellsArr.find(
+      //   (x) => x.id?.toString() === id?.toString()
+      // );
+
+      // console.log(seashell);
+
       setIsEditable(false);
       Axios.get(`/seashells/${id}`).then((res) => {
         setName(res.data.name);
@@ -33,19 +46,16 @@ export default function CreateSeashell() {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = { name, species, description };
     if (id) {
-      Axios.patch(`/seashells/${id}`, data).then((res) => {
-        console.log(res.data);
-        navigate("/");
-      });
+      await dispatch(
+        editSeashells({ id, name, species, description })
+      ).unwrap();
+      navigate("/");
     } else {
-      Axios.post("/seashells", data).then((res) => {
-        console.log(res.data);
-        navigate("/");
-      });
+      await dispatch(createSeashells({ name, species, description })).unwrap();
+      navigate("/");
     }
   };
 
