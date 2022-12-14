@@ -11,8 +11,6 @@ const initialState: ISeashells[] = [
   },
 ];
 
-// const initialArrayState: ISeashells[] = [initialState];
-
 export const seashellSlice = createSlice({
   name: "seashell",
   // `createSlice` will infer the state type from the `initialState` argument
@@ -24,8 +22,6 @@ export const seashellSlice = createSlice({
     builder.addCase(
       getSeashells.fulfilled,
       (state, action: PayloadAction<ISeashells[]>) => {
-        // console.log(action.payload);
-
         state = action.payload;
         return state;
       }
@@ -34,22 +30,14 @@ export const seashellSlice = createSlice({
       throw new Error();
     });
     builder.addCase(createSeashells.fulfilled, (state) => {
-      console.log(state);
-
-      // state = action.payload;
       return state;
     });
     builder.addCase(editSeashells.fulfilled, (state) => {
-      console.log(state);
-
-      // state = action.payload;
       return state;
     });
   },
 });
 
 export const { edit } = seashellSlice.actions;
-
-// Other code such as selectors can use the imported `RootState` type
 
 export default seashellSlice.reducer;

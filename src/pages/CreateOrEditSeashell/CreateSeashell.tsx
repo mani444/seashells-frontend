@@ -6,12 +6,13 @@ import {
   TextField,
   Button,
   useTheme,
+  Box,
+  Modal,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-import Axios from "../../axios/Axios";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateSeashell.module.css";
-import { useAppDispatch } from "../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 import {
   createSeashells,
   editSeashells,
@@ -24,25 +25,36 @@ export default function CreateSeashell() {
   const dispatch = useAppDispatch();
 
   let { id } = useParams();
-  //   console.log(id);
-
-  // const seashellsArr = useAppSelector((state) => state.seashell);
+  const [open, setOpen] = React.useState(false);
+  const handleClose = () => {
+    setOpen(false);
+    setName("");
+    setSpecies("");
+    setDescription("");
+  };
+  const seashellsArr = useAppSelector((state) => state.seashell);
   useEffect(() => {
     if (id && isEditable) {
-      // const seashell = seashellsArr.find(
-      //   (x) => x.id?.toString() === id?.toString()
-      // );
+      //GET FROM REDUX
 
-      // console.log(seashell);
-
+      const seashell = seashellsArr.find(
+        (x) => x.id?.toString() === id?.toString()
+      );
+      if (seashell) {
+        setName(seashell.name);
+        setSpecies(seashell.species);
+        setDescription(seashell.description);
+      }
       setIsEditable(false);
-      Axios.get(`/seashells/${id}`).then((res) => {
-        setName(res.data.name);
-        setSpecies(res.data.species);
-        setDescription(res.data.description);
-      });
+
+      //GET FROM SERVER
+      // Axios.get(`/seashells/${id}`).then((res) => {
+      //   setName(res.data.name);
+      //   setSpecies(res.data.species);
+      //   setDescription(res.data.description);
+      // });
     }
-  }, [isEditable, id]);
+  }, [isEditable, id, seashellsArr]);
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -52,18 +64,56 @@ export default function CreateSeashell() {
       await dispatch(
         editSeashells({ id, name, species, description })
       ).unwrap();
+
       navigate("/");
     } else {
       await dispatch(createSeashells({ name, species, description })).unwrap();
-      navigate("/");
+      setOpen(true);
     }
   };
 
   return (
     <Container maxWidth="xs">
       <div className={styles.container}>
+        {open ? (
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box className={styles.modal} textAlign="center">
+              <Typography
+                id="modal-modal-title"
+                variant="h4"
+                component="h2"
+                align="center"
+                color="green"
+                paddingBottom={3}
+              >
+                {" "}
+                SEASHELL ADDED
+              </Typography>
+              <Button
+                onClick={handleClose}
+                sx={{ mb: 2 }}
+                variant="contained"
+                color="primary"
+              >
+                ADD MORE SEASHELLS
+              </Button>
+              <Button
+                onClick={() => navigate("/")}
+                variant="contained"
+                color="primary"
+              >
+                SEASHELLS DASHBOARD
+              </Button>
+            </Box>
+          </Modal>
+        ) : null}
         <Typography component="h1" variant="h5" sx={{ paddingBottom: "15px" }}>
-          {id ? "EDIT SEASHELL" : "CREATE SEASHELL"}
+          {id ? "UPDATE SEASHELL" : "ADD SEASHELL"}
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
@@ -110,7 +160,7 @@ export default function CreateSeashell() {
               margin: theme.spacing(3, 0, 2),
             }}
           >
-            {id ? "EDIT" : "CREATE"}
+            {id ? "UPDATE" : "ADD"}
           </Button>
         </form>
       </div>

@@ -14,7 +14,7 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import Axios from "../../axios/Axios";
+import Axios from "../../api/Axios";
 import { Link } from "react-router-dom";
 // import { ISeashells } from "../../interfaces/interfaces";
 import SeashellRow from "../../components/SeashellRow";
@@ -30,17 +30,9 @@ export default function Seashell() {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  // const getData = async () => {
-  //   const response = await Axios.get("/seashells");
-  //   console.log(response.data[0]);
-  // setSeaShells(response.data);
-  // };
   useEffect(() => {
     dispatch(getSeashells());
-
-    // getData();
   }, [dispatch]);
-  console.log(seashellsArr);
 
   const UpdateUser = (id?: string) => {
     navigate("/update/" + id);
@@ -49,10 +41,9 @@ export default function Seashell() {
   const UserDelete = async (id?: string) => {
     await Axios.delete(`/seashells/${id}`)
       .then((res) => {
-        console.log(res.data);
         dispatch(getSeashells());
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
   };
 
   return (
