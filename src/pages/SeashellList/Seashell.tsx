@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Button,
@@ -15,13 +14,14 @@ import {
   Paper,
 } from "@mui/material";
 import Axios from "../../api/Axios";
-import { Link } from "react-router-dom";
 import { ISeashells } from "../../interfaces/interfaces";
 import SeashellRow from "../../components/SeashellRow";
-import styles from "./Seashell.module.css";
+import CreateSeashell from "../CreateOrEditSeashell/CreateSeashell";
 export default function Seashell() {
   const [seashells, setSeaShells] = useState<ISeashells[]>([]);
-  const navigate = useNavigate();
+  const [isOpened, setIsOpened] = useState(false);
+  const [id, setId] = useState<string>();
+
   const theme = useTheme();
 
   const getData = async () => {
@@ -33,7 +33,8 @@ export default function Seashell() {
   }, []);
 
   const UpdateUser = (id?: string) => {
-    navigate("/update/" + id);
+    setId(id);
+    setIsOpened(true);
   };
 
   const UserDelete = async (id?: string) => {
@@ -44,6 +45,11 @@ export default function Seashell() {
       .catch((err) => console.log(err));
   };
 
+  const handleCreateClick = () => {
+    console.log("a");
+
+    setIsOpened(true);
+  };
   return (
     <div>
       <Container
@@ -73,11 +79,15 @@ export default function Seashell() {
               </Typography>
             </Box>
             <Box>
-              <Link to="/create" className={styles.link}>
-                <Button variant="contained" color="primary">
-                  CREATE
-                </Button>
-              </Link>
+              {/* <Link to="/create" className={styles.link}> */}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCreateClick}
+              >
+                CREATE
+              </Button>
+              {/* </Link> */}
             </Box>
           </Box>
           <TableContainer sx={{ maxHeight: 740 }} component={Paper}>
@@ -110,6 +120,14 @@ export default function Seashell() {
           </TableContainer>
         </Paper>
       </Container>
+      {isOpened && (
+        <CreateSeashell
+          setIsOpened={setIsOpened}
+          id={id}
+          setId={setId}
+          getData={getData}
+        />
+      )}
     </div>
   );
 }

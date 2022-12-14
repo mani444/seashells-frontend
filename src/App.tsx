@@ -7,14 +7,14 @@ const router = createBrowserRouter([
     path: "/",
     element: <Seashell />,
   },
-  {
-    path: "/create",
-    element: <CreateSeashell />,
-  },
-  {
-    path: "/update/:id",
-    element: <CreateSeashell />,
-  },
+  // {
+  //   path: "/create",
+  //   element: <CreateSeashell />,
+  // },
+  // {
+  //   path: "/update/:id",
+  //   element: <CreateSeashell />,
+  // },
 ]);
 function App() {
   return (

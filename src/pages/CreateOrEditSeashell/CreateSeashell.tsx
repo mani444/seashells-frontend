@@ -9,27 +9,46 @@ import {
   Box,
   Modal,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
 import Axios from "../../api/Axios";
-import { useNavigate } from "react-router-dom";
 import styles from "./CreateSeashell.module.css";
-// import BasicModal from "../../components/SeashellModal";
 
-export default function CreateSeashell() {
+interface IProps {
+  id?: string;
+  setIsOpened: (value: boolean) => void;
+  setId: (value: string | undefined) => void;
+  getData: () => void;
+}
+export default function CreateSeashell({
+  id,
+  setIsOpened,
+  setId,
+  getData,
+}: IProps) {
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
   const [description, setDescription] = useState("");
   const [isEditable, setIsEditable] = useState(true);
 
-  let { id } = useParams();
-
   const [open, setOpen] = React.useState(false);
+  const [openCreate, setOpenCreate] = React.useState(true);
+
   const handleClose = () => {
+    setIsOpened(false);
     setOpen(false);
+    setOpenCreate(false);
     setName("");
     setSpecies("");
     setDescription("");
   };
+
+  const handleAddMoreSeashells = () => {
+    setOpen(false);
+    setOpenCreate(true);
+    setName("");
+    setSpecies("");
+    setDescription("");
+  };
+
   useEffect(() => {
     if (id && isEditable) {
       setIsEditable(false);
@@ -41,20 +60,21 @@ export default function CreateSeashell() {
     }
   }, [isEditable, id]);
   const theme = useTheme();
-  const navigate = useNavigate();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const data = { name, species, description };
     if (id) {
       Axios.patch(`/seashells/${id}`, data).then((res) => {
-        navigate("/");
+        setId(undefined);
+        handleClose();
+        getData();
       });
     } else {
       Axios.post("/seashells", data).then((res) => {
-        // setClicked(true);
+        setOpenCreate(false);
         setOpen(true);
-        // navigate("/");
+        getData();
       });
     }
   };
@@ -62,7 +82,7 @@ export default function CreateSeashell() {
   return (
     <Container maxWidth="xs">
       <div className={styles.container}>
-        {open ? (
+        {open && (
           <Modal
             open={open}
             onClose={handleClose}
@@ -78,79 +98,89 @@ export default function CreateSeashell() {
                 color="green"
                 paddingBottom={3}
               >
-                {" "}
-                SEASHELL ADDED
+                SEASHELL ADDED!
               </Typography>
+
               <Button
-                onClick={handleClose}
-                sx={{ mb: 2 }}
-                variant="contained"
                 color="primary"
+                variant="contained"
+                onClick={handleAddMoreSeashells}
+                sx={{ marginBottom: "15px" }}
               >
                 ADD MORE SEASHELLS
               </Button>
-              <Button
-                onClick={() => navigate("/")}
-                variant="contained"
-                color="primary"
-              >
-                SEASHELLS DASHBOARD
+              <Button color="primary" variant="contained" onClick={handleClose}>
+                CLOSE
               </Button>
             </Box>
           </Modal>
-        ) : null}
-
-        <Typography component="h1" variant="h5" sx={{ paddingBottom: "15px" }}>
-          {id ? "UPDATE SEASHELL" : "CREATE SEASHELL"}
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="name"
-                label="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="species"
-                label="Species"
-                value={species}
-                onChange={(e) => setSpecies(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="description"
-                label="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            sx={{
-              margin: theme.spacing(3, 0, 2),
-            }}
+        )}
+        {openCreate && (
+          <Modal
+            open={openCreate}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
           >
-            {id ? "UPDATE" : "CREATE"}
-          </Button>
-        </form>
+            <Box className={styles.modal} textAlign="center">
+              <Typography
+                component="h1"
+                variant="h5"
+                sx={{ paddingBottom: "15px" }}
+              >
+                {id ? "UPDATE SEASHELL" : "CREATE SEASHELL"}
+              </Typography>
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="name"
+                      label="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="species"
+                      label="Species"
+                      value={species}
+                      onChange={(e) => setSpecies(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="description"
+                      label="Description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    margin: theme.spacing(3, 0, 2),
+                  }}
+                >
+                  {id ? "UPDATE" : "CREATE"}
+                </Button>
+              </form>
+            </Box>
+          </Modal>
+        )}
       </div>
     </Container>
   );
