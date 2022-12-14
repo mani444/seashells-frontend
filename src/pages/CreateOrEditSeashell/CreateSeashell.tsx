@@ -6,11 +6,15 @@ import {
   TextField,
   Button,
   useTheme,
+  Box,
+  Modal,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-import Axios from "../../axios/Axios";
+import Axios from "../../api/Axios";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateSeashell.module.css";
+// import BasicModal from "../../components/SeashellModal";
+
 export default function CreateSeashell() {
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -18,8 +22,14 @@ export default function CreateSeashell() {
   const [isEditable, setIsEditable] = useState(true);
 
   let { id } = useParams();
-  //   console.log(id);
 
+  const [open, setOpen] = React.useState(false);
+  const handleClose = () => {
+    setOpen(false);
+    setName("");
+    setSpecies("");
+    setDescription("");
+  };
   useEffect(() => {
     if (id && isEditable) {
       setIsEditable(false);
@@ -38,13 +48,13 @@ export default function CreateSeashell() {
     const data = { name, species, description };
     if (id) {
       Axios.patch(`/seashells/${id}`, data).then((res) => {
-        console.log(res.data);
         navigate("/");
       });
     } else {
       Axios.post("/seashells", data).then((res) => {
-        console.log(res.data);
-        navigate("/");
+        // setClicked(true);
+        setOpen(true);
+        // navigate("/");
       });
     }
   };
@@ -52,8 +62,46 @@ export default function CreateSeashell() {
   return (
     <Container maxWidth="xs">
       <div className={styles.container}>
+        {open ? (
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box className={styles.modal} textAlign="center">
+              <Typography
+                id="modal-modal-title"
+                variant="h4"
+                component="h2"
+                align="center"
+                color="green"
+                paddingBottom={3}
+              >
+                {" "}
+                SEASHELL ADDED
+              </Typography>
+              <Button
+                onClick={handleClose}
+                sx={{ mb: 2 }}
+                variant="contained"
+                color="primary"
+              >
+                ADD MORE SEASHELLS
+              </Button>
+              <Button
+                onClick={() => navigate("/")}
+                variant="contained"
+                color="primary"
+              >
+                SEASHELLS DASHBOARD
+              </Button>
+            </Box>
+          </Modal>
+        ) : null}
+
         <Typography component="h1" variant="h5" sx={{ paddingBottom: "15px" }}>
-          {id ? "EDIT SEASHELL" : "CREATE SEASHELL"}
+          {id ? "UPDATE SEASHELL" : "CREATE SEASHELL"}
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
@@ -100,7 +148,7 @@ export default function CreateSeashell() {
               margin: theme.spacing(3, 0, 2),
             }}
           >
-            {id ? "EDIT" : "CREATE"}
+            {id ? "UPDATE" : "CREATE"}
           </Button>
         </form>
       </div>
