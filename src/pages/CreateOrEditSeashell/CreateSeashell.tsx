@@ -9,25 +9,49 @@ import {
   Box,
   Modal,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+
 import styles from "./CreateSeashell.module.css";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import {
   createSeashells,
   editSeashells,
 } from "../../redux/seashell/seashellThunk";
-export default function CreateSeashell() {
+
+interface IProps {
+  id?: string;
+  setIsOpened: (value: boolean) => void;
+  setId: (value: string | undefined) => void;
+  handleClick: (value: string) => void;
+}
+export default function CreateSeashell({
+  id,
+  setIsOpened,
+  setId,
+  handleClick,
+}: IProps) {
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
   const [description, setDescription] = useState("");
   const [isEditable, setIsEditable] = useState(true);
   const dispatch = useAppDispatch();
+  const [newId, setNewId] = useState<string | undefined>("");
 
-  let { id } = useParams();
   const [open, setOpen] = React.useState(false);
+  const [openCreate, setOpenCreate] = React.useState(true);
+
   const handleClose = () => {
+    setId(undefined);
+    setIsOpened(false);
     setOpen(false);
+    setOpenCreate(false);
+    setName("");
+    setSpecies("");
+    setDescription("");
+  };
+
+  const handleAddMoreSeashells = () => {
+    setOpen(false);
+    setOpenCreate(true);
     setName("");
     setSpecies("");
     setDescription("");
@@ -56,7 +80,6 @@ export default function CreateSeashell() {
     }
   }, [isEditable, id, seashellsArr]);
   const theme = useTheme();
-  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -64,18 +87,23 @@ export default function CreateSeashell() {
       await dispatch(
         editSeashells({ id, name, species, description })
       ).unwrap();
-
-      navigate("/");
+      handleClick("Seashell Updated!");
+      setId(undefined);
+      handleClose();
     } else {
-      await dispatch(createSeashells({ name, species, description })).unwrap();
+      const res = await dispatch(
+        createSeashells({ name, species, description })
+      ).unwrap();
+      handleClick("Seashell Added with Id # " + res.id);
+      setNewId(res.id);
+      setOpenCreate(false);
       setOpen(true);
     }
   };
-
   return (
     <Container maxWidth="xs">
       <div className={styles.container}>
-        {open ? (
+        {open && (
           <Modal
             open={open}
             onClose={handleClose}
@@ -92,77 +120,88 @@ export default function CreateSeashell() {
                 paddingBottom={3}
               >
                 {" "}
-                SEASHELL ADDED
+                Seashell Added with ID # {newId}
               </Typography>
               <Button
-                onClick={handleClose}
-                sx={{ mb: 2 }}
-                variant="contained"
                 color="primary"
+                variant="contained"
+                onClick={handleAddMoreSeashells}
+                sx={{ marginBottom: "15px" }}
               >
                 ADD MORE SEASHELLS
               </Button>
-              <Button
-                onClick={() => navigate("/")}
-                variant="contained"
-                color="primary"
-              >
-                SEASHELLS DASHBOARD
+              <Button color="primary" variant="contained" onClick={handleClose}>
+                CLOSE
               </Button>
             </Box>
           </Modal>
-        ) : null}
-        <Typography component="h1" variant="h5" sx={{ paddingBottom: "15px" }}>
-          {id ? "UPDATE SEASHELL" : "ADD SEASHELL"}
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="name"
-                label="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="species"
-                label="Species"
-                value={species}
-                onChange={(e) => setSpecies(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                id="description"
-                label="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            sx={{
-              margin: theme.spacing(3, 0, 2),
-            }}
+        )}
+        {openCreate && (
+          <Modal
+            open={openCreate}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
           >
-            {id ? "UPDATE" : "ADD"}
-          </Button>
-        </form>
+            <Box className={styles.modal} textAlign="center">
+              <Typography
+                component="h1"
+                variant="h5"
+                sx={{ paddingBottom: "15px" }}
+              >
+                {id ? "UPDATE SEASHELL" : "ADD SEASHELL"}
+              </Typography>
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="name"
+                      label="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="species"
+                      label="Species"
+                      value={species}
+                      onChange={(e) => setSpecies(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="description"
+                      label="Description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    margin: theme.spacing(3, 0, 2),
+                  }}
+                >
+                  {id ? "UPDATE" : "ADD"}
+                </Button>
+              </form>
+            </Box>
+          </Modal>
+        )}
       </div>
     </Container>
   );

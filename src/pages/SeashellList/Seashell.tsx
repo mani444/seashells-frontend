@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Typography,
   Button,
@@ -13,41 +12,71 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import Axios from "../../api/Axios";
-import { Link } from "react-router-dom";
-// import { ISeashells } from "../../interfaces/interfaces";
 import SeashellRow from "../../components/SeashellRow";
-import styles from "./Seashell.module.css";
 import { getSeashells } from "../../redux/seashell/seashellThunk";
-// import { useDispatch } from "react-redux";
+import CreateSeashell from "../CreateOrEditSeashell/CreateSeashell";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 export default function Seashell() {
-  // const [seashells, setSeaShells] = useState<ISeashells[]>([]);
+  const [isOpened, setIsOpened] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const handleClick = (message: string) => {
+    setMsg(message);
+    setOpen(true);
+  };
+
+  const handleCls = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const [id, setId] = useState<string>();
 
   const dispatch = useAppDispatch();
   const seashellsArr = useAppSelector((state) => state.seashell);
-  const navigate = useNavigate();
   const theme = useTheme();
-
-  useEffect(() => {
-    dispatch(getSeashells());
-  }, [dispatch]);
-
   const UpdateUser = (id?: string) => {
-    navigate("/update/" + id);
+    setId(id);
+    setIsOpened(true);
   };
-
+  const handleCreateClick = () => {
+    setIsOpened(true);
+  };
   const UserDelete = async (id?: string) => {
     await Axios.delete(`/seashells/${id}`)
       .then((res) => {
+        handleClick("Seashell Deleted!");
         dispatch(getSeashells());
       })
       .catch((err) => console.error(err));
   };
+  useEffect(() => {
+    dispatch(getSeashells());
+  }, [dispatch]);
 
   return (
     <div>
+      {/* <Button variant="outlined" onClick={handleClick}>
+        Open success snackbar
+      </Button> */}
+      <Snackbar
+        open={open}
+        autoHideDuration={2000}
+        onClose={handleCls}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={handleCls} severity="success" sx={{ width: "100%" }}>
+          {msg}
+        </Alert>
+      </Snackbar>
       <Container
         sx={{
           marginTop: theme.spacing(5),
@@ -75,11 +104,13 @@ export default function Seashell() {
               </Typography>
             </Box>
             <Box>
-              <Link to="/create" className={styles.link}>
-                <Button variant="contained" color="primary">
-                  CREATE
-                </Button>
-              </Link>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCreateClick}
+              >
+                CREATE
+              </Button>
             </Box>
           </Box>
           <TableContainer sx={{ maxHeight: 740 }} component={Paper}>
@@ -112,6 +143,14 @@ export default function Seashell() {
           </TableContainer>
         </Paper>
       </Container>
+      {isOpened && (
+        <CreateSeashell
+          setIsOpened={setIsOpened}
+          id={id}
+          setId={setId}
+          handleClick={handleClick}
+        />
+      )}
     </div>
   );
 }

@@ -29,9 +29,10 @@ export const seashellSlice = createSlice({
     builder.addCase(getSeashells.rejected, () => {
       throw new Error();
     });
-    builder.addCase(createSeashells.fulfilled, (state) => {
-      return state;
-    });
+    builder.addCase(
+      createSeashells.fulfilled,
+      (state, action: PayloadAction<ISeashells>) => {}
+    );
     builder.addCase(editSeashells.fulfilled, (state) => {
       return state;
     });

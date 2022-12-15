@@ -13,13 +13,18 @@ export const getSeashells = createAsyncThunk("/seashells", async () => {
 export const createSeashells = createAsyncThunk(
   "/seashells/data",
   async (data: ISeashells, { dispatch }) => {
-    Axios.post("/seashells", data).then((res) => {});
+    const response = await Axios.post("/seashells", data);
+
+    await dispatch(getSeashells());
+    return response.data as ISeashells;
   }
 );
 
 export const editSeashells = createAsyncThunk(
   "/seashells/edit",
-  async (data: ISeashells) => {
-    Axios.patch(`/seashells/${data.id}`, data).then((res) => {});
+  async (data: ISeashells, { dispatch }) => {
+    Axios.patch(`/seashells/${data.id}`, data).then((res) => {
+      dispatch(getSeashells());
+    });
   }
 );
