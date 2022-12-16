@@ -14,19 +14,25 @@ import {
   Paper,
   Alert,
   Snackbar,
+  AlertColor,
 } from "@mui/material";
 import Axios from "../../api/Axios";
 import SeashellRow from "../../components/SeashellRow";
 import { getSeashells } from "../../redux/seashell/seashellThunk";
 import CreateSeashell from "../CreateOrEditSeashell/CreateSeashell";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { CircularSpinner } from "../../components/Spinner";
 export default function Seashell() {
   const [isOpened, setIsOpened] = useState(false);
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
+  const [alertType, setAlertType] = useState("success");
 
-  const handleClick = (message: string) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleClick = (message: string, alertType: string) => {
     setMsg(message);
+    setAlertType(alertType);
     setOpen(true);
   };
 
@@ -53,27 +59,32 @@ export default function Seashell() {
   const UserDelete = async (id?: string) => {
     await Axios.delete(`/seashells/${id}`)
       .then((res) => {
-        handleClick("Seashell Deleted!");
+        handleClick("Seashell Deleted!", "success");
         dispatch(getSeashells());
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        handleClick(err.message, "error");
+      });
   };
   useEffect(() => {
-    dispatch(getSeashells());
+    dispatch(getSeashells(setIsLoading));
   }, [dispatch]);
 
   return (
     <div>
-      {/* <Button variant="outlined" onClick={handleClick}>
-        Open success snackbar
-      </Button> */}
+      {isLoading && <CircularSpinner backdropAlpha={false}></CircularSpinner>}
+
       <Snackbar
         open={open}
         autoHideDuration={2000}
         onClose={handleCls}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert onClose={handleCls} severity="success" sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleCls}
+          severity={alertType as AlertColor}
+          sx={{ width: "100%" }}
+        >
           {msg}
         </Alert>
       </Snackbar>
@@ -126,17 +137,20 @@ export default function Seashell() {
               </TableHead>
               <TableBody>
                 {seashellsArr
-                  ? seashellsArr.map((user) => (
-                      <SeashellRow
-                        key={user.id}
-                        id={user.id}
-                        name={user.name}
-                        species={user.species}
-                        description={user.description}
-                        UpdateUser={() => UpdateUser(user.id)}
-                        UserDelete={() => UserDelete(user.id)}
-                      />
-                    ))
+                  ? seashellsArr.map(
+                      (user) =>
+                        user.id !== "" && (
+                          <SeashellRow
+                            key={user.id}
+                            id={user.id}
+                            name={user.name}
+                            species={user.species}
+                            description={user.description}
+                            UpdateUser={() => UpdateUser(user.id)}
+                            UserDelete={() => UserDelete(user.id)}
+                          />
+                        )
+                    )
                   : null}
               </TableBody>
             </Table>

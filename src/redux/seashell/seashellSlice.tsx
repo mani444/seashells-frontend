@@ -33,7 +33,13 @@ export const seashellSlice = createSlice({
       createSeashells.fulfilled,
       (state, action: PayloadAction<ISeashells>) => {}
     );
+    builder.addCase(createSeashells.rejected, (state, action) => {
+      return state;
+    });
     builder.addCase(editSeashells.fulfilled, (state) => {
+      return state;
+    });
+    builder.addCase(editSeashells.rejected, (state, action) => {
       return state;
     });
   },

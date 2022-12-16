@@ -21,7 +21,7 @@ interface IProps {
   id?: string;
   setIsOpened: (value: boolean) => void;
   setId: (value: string | undefined) => void;
-  handleClick: (value: string) => void;
+  handleClick: (value: string, val2: string) => void;
 }
 export default function CreateSeashell({
   id,
@@ -83,21 +83,37 @@ export default function CreateSeashell({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (id) {
-      await dispatch(
-        editSeashells({ id, name, species, description })
-      ).unwrap();
-      handleClick("Seashell Updated!");
-      setId(undefined);
-      handleClose();
-    } else {
-      const res = await dispatch(
-        createSeashells({ name, species, description })
-      ).unwrap();
-      handleClick("Seashell Added with Id # " + res.id);
-      setNewId(res.id);
-      setOpenCreate(false);
-      setOpen(true);
+    try {
+      if (id) {
+        await dispatch(editSeashells({ id, name, species, description }))
+          .unwrap()
+          .then((res) => {
+            handleClick("Seashell Updated!", "success");
+            setId(undefined);
+            handleClose();
+          })
+          .catch((err) => {
+            handleClick(err.message, "error");
+            setId(undefined);
+            handleClose();
+          });
+      } else {
+        await dispatch(createSeashells({ name, species, description }))
+          .unwrap()
+          .then((res) => {
+            handleClick("Seashell Added with Id # " + res.id, "success");
+            setNewId(res.id);
+            setOpenCreate(false);
+            setOpen(true);
+          })
+          .catch((err) => {
+            handleClick(err.message, "error");
+            handleClose();
+            setOpenCreate(false);
+          });
+      }
+    } catch {
+      console.log("handleClick");
     }
   };
   return (
